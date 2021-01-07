@@ -4,14 +4,14 @@
 // Copyright 2019 Datadog, Inc.
 
 using System;
-using System.Threading.Tasks;
-using System.Text;
-using System.Net.Http;
-using Serilog.Events;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
+using System.Text;
+using System.Threading.Tasks;
+using NLog.Common;
 
-namespace Serilog.Sinks.Datadog.Logs
+namespace NLog.Target.Datadog
 {
     public class DatadogHttpClient : IDatadogClient
     {
@@ -19,9 +19,7 @@ namespace Serilog.Sinks.Datadog.Logs
         private const int _maxSize = 2 * 1024 * 1024 - 51;  // Need to reserve space for at most 49 "," and "[" + "]"
         private const int _maxMessageSize = 256 * 1024;
 
-        private readonly DatadogConfiguration _config;
         private readonly string _url;
-        private readonly LogFormatter _formatter;
         private readonly HttpClient _client;
 
         /// <summary>
@@ -39,81 +37,57 @@ namespace Serilog.Sinks.Datadog.Logs
         /// </summary>
         private static readonly UTF8Encoding UTF8 = new UTF8Encoding();
 
-        public DatadogHttpClient(DatadogConfiguration config, LogFormatter formatter, string apiKey)
+        public DatadogHttpClient(string url, string apiKey)
         {
-            _config = config;
             _client = new HttpClient();
-            _url = $"{config.Url}/v1/input/{apiKey}";
-            _formatter = formatter;
+            _url = $"{url}/v1/input/{apiKey}";
+            InternalLogger.Info("Creating HTTP client with config: {0}", _url);
         }
 
-        public Task WriteAsync(IEnumerable<LogEvent> events)
+        public void WriteAsync(IEnumerable<string> events)
         {
-            var serializedEvents = SerializeEvents(events);
-            var tasks = serializedEvents.LogEventChunks.Select(Post);
-
-            var tooBigTask = Task.Run(() =>
-            {
-                if (serializedEvents.TooBigLogEvents.Count > 0)
-                {
-                    throw new TooBigLogEventException(serializedEvents.TooBigLogEvents);
-                }
-            });
-
-            tasks = tasks.Concat(new[] { tooBigTask });
-
-            return Task.WhenAll(tasks);
+            var chunks = SerializeEvents(events);
+            var tasks = chunks.Select(Post);
+            Task.WhenAll(tasks).GetAwaiter().GetResult();
         }
 
-        private SerializedEvents SerializeEvents(IEnumerable<LogEvent> events)
+        private List<string> SerializeEvents(IEnumerable<string> events)
         {
-            var serializedEvents = new SerializedEvents();
+            List<string> chunks = new List<string>();
+
             int currentSize = 0;
 
             var chunkBuffer = new List<string>(events.Count());
-            var logEvents = new List<LogEvent>(events.Count());
-            foreach (var logEvent in events)
+            foreach (var formattedLog in events)
             {
-                var formattedLog = _formatter.formatMessage(logEvent);
                 var logSize = Encoding.UTF8.GetByteCount(formattedLog);
                 if (logSize > _maxMessageSize)
                 {
-                    serializedEvents.TooBigLogEvents.Add(logEvent);
                     continue;  // The log is dropped because the backend would not accept it
                 }
                 if (currentSize + logSize > _maxSize)
                 {
                     // Flush the chunkBuffer to the chunks and reset the chunkBuffer
-                    serializedEvents.LogEventChunks.Add(GenerateChunk(chunkBuffer, ",", "[", "]", logEvents));
+                    chunks.Add(GenerateChunk(chunkBuffer, ",", "[", "]"));
                     chunkBuffer.Clear();
-                    logEvents.Clear();
                     currentSize = 0;
                 }
                 chunkBuffer.Add(formattedLog);
-                logEvents.Add(logEvent);
                 currentSize += logSize;
             }
-            if (chunkBuffer.Count != 0)
-            {
-                serializedEvents.LogEventChunks.Add(GenerateChunk(chunkBuffer, ",", "[", "]", logEvents));
-            }
+            chunks.Add(GenerateChunk(chunkBuffer, ",", "[", "]"));
 
-            return serializedEvents;
+            return chunks;
 
         }
 
-        private static LogEventChunk GenerateChunk(IEnumerable<string> collection, string delimiter, string prefix, string suffix, IEnumerable<LogEvent> logEvents)
+        private static string GenerateChunk(IEnumerable<string> collection, string delimiter, string prefix, string suffix)
         {
-            return new LogEventChunk
-            {
-                Payload = prefix + String.Join(delimiter, collection) + suffix,
-                LogEvents = new List<LogEvent>(logEvents), // Copy `logEvents` as `logEvents` is reused.
-            };
+            return prefix + string.Join(delimiter, collection) + suffix;
         }
 
-        private async Task Post(LogEventChunk logEventChunk)
+        private async Task Post(string payload)
         {
-            var payload = logEventChunk.Payload;
             var content = new StringContent(payload, Encoding.UTF8, _content);
             for (int retry = 0; retry < MaxRetries; retry++)
             {
@@ -125,7 +99,9 @@ namespace Serilog.Sinks.Datadog.Logs
 
                 try
                 {
+                    InternalLogger.Trace("Sending payload to Datadog: {0}", payload);
                     var result = await _client.PostAsync(_url, content);
+                    InternalLogger.Trace("Statuscode: {0}", result.StatusCode);
                     if (result == null) { continue; }
                     if ((int)result.StatusCode >= 500) { continue; }
                     if ((int)result.StatusCode >= 400) { break; }
@@ -133,25 +109,13 @@ namespace Serilog.Sinks.Datadog.Logs
                 }
                 catch (Exception)
                 {
-                    continue;
                 }
             }
 
-            throw new CannotSendLogEventException(payload, logEventChunk.LogEvents);
+            throw new CannotSendLogEventException(MaxRetries);
         }
 
         void IDatadogClient.Close() { }
 
-        private class LogEventChunk
-        {
-            public string Payload { get; set; }
-            public IEnumerable<LogEvent> LogEvents { get; set; }
-        }
-
-        private class SerializedEvents
-        {
-            public List<LogEventChunk> LogEventChunks { get; } = new List<LogEventChunk>();
-            public List<LogEvent> TooBigLogEvents { get; } = new List<LogEvent>();
-        }
     }
 }

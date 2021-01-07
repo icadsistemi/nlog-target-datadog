@@ -4,24 +4,24 @@
 // Copyright 2019 Datadog, Inc.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Net.Security;
 using System.Net.Sockets;
-using System.Threading.Tasks;
 using System.Text;
-using Serilog.Debugging;
-using System.Collections.Generic;
-using Serilog.Events;
+using System.Threading.Tasks;
+using NLog.Common;
 
-namespace Serilog.Sinks.Datadog.Logs
+namespace NLog.Target.Datadog
 {
     /// <summary>
     /// TCP Client that forwards log events to Datadog.
     /// </summary>
     public class DatadogTcpClient : IDatadogClient
     {
-        private readonly DatadogConfiguration _config;
-        private readonly LogFormatter _formatter;
+        private readonly string _url;
+        private readonly int _port;
+        private readonly bool _useSsl;
         private readonly string _apiKey;
         private TcpClient _client;
         private Stream _stream;
@@ -51,11 +51,13 @@ namespace Serilog.Sinks.Datadog.Logs
         /// </summary>
         private static readonly UTF8Encoding UTF8 = new UTF8Encoding();
 
-        public DatadogTcpClient(DatadogConfiguration config, LogFormatter formatter, string apiKey)
+        public DatadogTcpClient(string url, int port, bool useSSL, string apiKey)
         {
-            _config = config;
-            _formatter = formatter;
+            _url = url;
+            _port = port;
+            _useSsl = useSSL;
             _apiKey = apiKey;
+            InternalLogger.Info("Creating TCP client with config: URL: {0}, Port: {1}, UseSSL: {2}", url, port, useSSL);
         }
 
         /// <summary>
@@ -64,12 +66,12 @@ namespace Serilog.Sinks.Datadog.Logs
         private async Task ConnectAsync()
         {
             _client = new TcpClient();
-            await _client.ConnectAsync(_config.Url, _config.Port);
+            await _client.ConnectAsync(_url, _port);
             Stream rawStream = _client.GetStream();
-            if (_config.UseSSL)
+            if (_useSsl)
             {
                 SslStream secureStream = new SslStream(rawStream);
-                await secureStream.AuthenticateAsClientAsync(_config.Url);
+                await secureStream.AuthenticateAsClientAsync(_url);
                 _stream = secureStream;
             }
             else
@@ -78,13 +80,18 @@ namespace Serilog.Sinks.Datadog.Logs
             }
         }
 
-        public async Task WriteAsync(IEnumerable<LogEvent> events)
+        public void WriteAsync(IEnumerable<string> events)
+        {
+            Task.WhenAll(WriteAsyncImplementation(events)).GetAwaiter().GetResult();
+        }
+
+        private async Task WriteAsyncImplementation(IEnumerable<string> events)
         {
             var payloadBuilder = new StringBuilder();
             foreach (var logEvent in events)
             {
                 payloadBuilder.Append(_apiKey + WhiteSpace);
-                payloadBuilder.Append(_formatter.formatMessage(logEvent));
+                payloadBuilder.Append(logEvent);
                 payloadBuilder.Append(MessageDelimiter);
             }
             string payload = payloadBuilder.ToString();
@@ -105,13 +112,14 @@ namespace Serilog.Sinks.Datadog.Logs
                     }
                     catch (Exception e)
                     {
-                        SelfLog.WriteLine("Could not connect to Datadog: {0}", e);
+                        InternalLogger.Error(e, "Could not connect to Datadog");
                         continue;
                     }
                 }
 
                 try
                 {
+                    InternalLogger.Trace("Sending payload to Datadog: {0}", payload);
                     byte[] data = UTF8.GetBytes(payload);
                     _stream.Write(data, 0, data.Length);
                     return;
@@ -119,10 +127,10 @@ namespace Serilog.Sinks.Datadog.Logs
                 catch (Exception e)
                 {
                     CloseConnection();
-                    SelfLog.WriteLine("Could not send data to Datadog: {0}", e);
+                    InternalLogger.Error(e, "Could not send data to Datadog");
                 }
             }
-            SelfLog.WriteLine("Could not send payload to Datadog: {0}", payload);
+            InternalLogger.Error("Could not send payload to Datadog: {0}", payload);
         }
 
         private void CloseConnection()
@@ -156,7 +164,7 @@ namespace Serilog.Sinks.Datadog.Logs
                 }
                 catch (Exception e)
                 {
-                    SelfLog.WriteLine("Could not flush the remaining data: {0}", e);
+                    InternalLogger.Error(e, "Could not flush the remaining data");
                 }
                 CloseConnection();
             }

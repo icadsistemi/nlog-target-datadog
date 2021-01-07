@@ -15,41 +15,41 @@ using NLog.Common;
 namespace NLog.Target.Datadog
 {
     /// <summary>
-    /// TCP Client that forwards log events to Datadog.
+    ///     TCP Client that forwards log events to Datadog.
     /// </summary>
     public class DatadogTcpClient : IDatadogClient
     {
-        private readonly string _url;
-        private readonly int _port;
-        private readonly bool _useSsl;
-        private readonly string _apiKey;
-        private TcpClient _client;
-        private Stream _stream;
-
         /// <summary>
-        /// API Key / message-content delimiter.
+        ///     API Key / message-content delimiter.
         /// </summary>
         private const string WhiteSpace = " ";
 
         /// <summary>
-        /// Message delimiter.
+        ///     Message delimiter.
         /// </summary>
         private const string MessageDelimiter = "\n";
 
         /// <summary>
-        /// Max number of retries when sending failed.
+        ///     Max number of retries when sending failed.
         /// </summary>
         private const int MaxRetries = 5;
 
         /// <summary>
-        /// Max backoff used when sending failed.
+        ///     Max backoff used when sending failed.
         /// </summary>
         private const int MaxBackoff = 30;
 
         /// <summary>
-        /// Shared UTF8 encoder.
+        ///     Shared UTF8 encoder.
         /// </summary>
         private static readonly UTF8Encoding UTF8 = new UTF8Encoding();
+
+        private readonly string _apiKey;
+        private readonly int _port;
+        private readonly string _url;
+        private readonly bool _useSsl;
+        private TcpClient _client;
+        private Stream _stream;
 
         public DatadogTcpClient(string url, int port, bool useSSL, string apiKey)
         {
@@ -60,8 +60,33 @@ namespace NLog.Target.Datadog
             InternalLogger.Info("Creating TCP client with config: URL: {0}, Port: {1}, UseSSL: {2}", url, port, useSSL);
         }
 
+        public Task WriteAsync(IReadOnlyCollection<string> events)
+        {
+            return Task.WhenAll(WriteAsyncImplementation(events));
+        }
+
         /// <summary>
-        /// Initialize a connection to Datadog logs-backend.
+        ///     Close the client.
+        /// </summary>
+        public void Close()
+        {
+            if (!IsConnectionClosed())
+            {
+                try
+                {
+                    _stream.Flush();
+                }
+                catch (Exception e)
+                {
+                    InternalLogger.Error(e, "Could not flush the remaining data");
+                }
+
+                CloseConnection();
+            }
+        }
+
+        /// <summary>
+        ///     Initialize a connection to Datadog logs-backend.
         /// </summary>
         private async Task ConnectAsync()
         {
@@ -70,7 +95,7 @@ namespace NLog.Target.Datadog
             Stream rawStream = _client.GetStream();
             if (_useSsl)
             {
-                SslStream secureStream = new SslStream(rawStream);
+                var secureStream = new SslStream(rawStream);
                 await secureStream.AuthenticateAsClientAsync(_url);
                 _stream = secureStream;
             }
@@ -78,11 +103,6 @@ namespace NLog.Target.Datadog
             {
                 _stream = rawStream;
             }
-        }
-
-        public Task WriteAsync(IReadOnlyCollection<string> events)
-        {
-            return Task.WhenAll(WriteAsyncImplementation(events));
         }
 
         private async Task WriteAsyncImplementation(IEnumerable<string> events)
@@ -94,18 +114,15 @@ namespace NLog.Target.Datadog
                 payloadBuilder.Append(logEvent);
                 payloadBuilder.Append(MessageDelimiter);
             }
-            string payload = payloadBuilder.ToString();
 
-            for (int retry = 0; retry < MaxRetries; retry++)
+            var payload = payloadBuilder.ToString();
+
+            for (var retry = 0; retry < MaxRetries; retry++)
             {
-                int backoff = (int)Math.Min(Math.Pow(retry, 2), MaxBackoff);
-                if (retry > 0)
-                {
-                    await Task.Delay(backoff * 1000);
-                }
+                var backoff = (int) Math.Min(Math.Pow(retry, 2), MaxBackoff);
+                if (retry > 0) await Task.Delay(backoff * 1000);
 
                 if (IsConnectionClosed())
-                {
                     try
                     {
                         await ConnectAsync();
@@ -115,12 +132,11 @@ namespace NLog.Target.Datadog
                         InternalLogger.Error(e, "Could not connect to Datadog");
                         continue;
                     }
-                }
 
                 try
                 {
                     InternalLogger.Trace("Sending payload to Datadog: {0}", payload);
-                    byte[] data = UTF8.GetBytes(payload);
+                    var data = UTF8.GetBytes(payload);
                     await _stream.WriteAsync(data, 0, data.Length);
                     return;
                 }
@@ -130,6 +146,7 @@ namespace NLog.Target.Datadog
                     InternalLogger.Error(e, "Could not send data to Datadog");
                 }
             }
+
             InternalLogger.Error("Could not send payload to Datadog: {0}", payload);
         }
 
@@ -149,25 +166,6 @@ namespace NLog.Target.Datadog
         private bool IsConnectionClosed()
         {
             return _client == null || _stream == null;
-        }
-
-        /// <summary>
-        /// Close the client.
-        /// </summary>
-        public void Close()
-        {
-            if (!IsConnectionClosed())
-            {
-                try
-                {
-                    _stream.Flush();
-                }
-                catch (Exception e)
-                {
-                    InternalLogger.Error(e, "Could not flush the remaining data");
-                }
-                CloseConnection();
-            }
         }
     }
 }

@@ -11,13 +11,13 @@ namespace NLog.Target.Datadog
     public interface IDatadogClient
     {
         /// <summary>
-        /// Send payload to Datadog logs-backend.
+        ///     Send payload to Datadog logs-backend.
         /// </summary>
         /// <param name="events">Events to send.</param>
         Task WriteAsync(IReadOnlyCollection<string> events);
 
         /// <summary>
-        /// Cleanup existing resources.
+        ///     Cleanup existing resources.
         /// </summary>
         void Close();
     }

@@ -5,16 +5,16 @@ using Xunit;
 
 namespace NLog.Targets.ElasticSearch.Tests
 {
-
     public class TestData
     {
         public string Name { get; set; }
         public int Age { get; set; }
         public Guid Id { get; set; }
     }
+
     public class IntegrationTests
     {
-        [Fact(Skip ="Integration")]
+        [Fact(Skip = "Integration")]
         public void SimpleLogTest()
         {
             var elasticTarget = new DataDogTarget
@@ -112,7 +112,7 @@ namespace NLog.Targets.ElasticSearch.Tests
             }
             catch (Exception e)
             {
-                logger.Error(e,"Oops");
+                logger.Error(e, "Oops");
             }
 
             LogManager.Flush();

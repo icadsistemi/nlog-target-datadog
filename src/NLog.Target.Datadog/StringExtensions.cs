@@ -8,7 +8,8 @@ namespace NLog.Target.Datadog
 {
     internal static class StringExtensions
     {
-        public static object ToSystemType(this string field, Type type, IFormatProvider formatProvider, JsonSerializer jsonSerializer)
+        public static object ToSystemType(this string field, Type type, IFormatProvider formatProvider,
+            JsonSerializer jsonSerializer)
         {
             if (formatProvider == null)
                 formatProvider = CultureInfo.CurrentCulture;
@@ -28,7 +29,8 @@ namespace NLog.Target.Datadog
                 case "System.Object":
                     using (var reader = new JsonTextReader(new StringReader(field)))
                     {
-                        return ((ExpandoObject)jsonSerializer.Deserialize(reader, typeof(ExpandoObject))).ReplaceDotInKeys(alwaysCloneObject: false);
+                        return ((ExpandoObject) jsonSerializer.Deserialize(reader, typeof(ExpandoObject)))
+                            .ReplaceDotInKeys(false);
                     }
                 default:
                     return field;

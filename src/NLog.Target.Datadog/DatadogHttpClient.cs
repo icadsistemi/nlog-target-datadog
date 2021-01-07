@@ -82,12 +82,16 @@ namespace NLog.Target.Datadog
 
         private static string GenerateChunk(IList<string> collection, string delimiter, string prefix, string suffix, int size)
         {
+            if (collection.Count <= 0)
+                return prefix + suffix;
+
             var capacity = size + prefix.Length + suffix.Length + (collection.Count * delimiter.Length);
             var buf = new StringBuilder(capacity);
             buf.Append(prefix);
-            for (var i = 0; i < collection.Count; ++i)
+            buf.Append(collection[0]);
+            for (var i = 1; i < collection.Count; ++i)
             {
-                if (i > 0) buf.Append(delimiter);
+                buf.Append(delimiter);
                 buf.Append(collection[i]);
             }
             buf.Append(suffix);

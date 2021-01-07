@@ -56,6 +56,8 @@ namespace NLog.Target.Datadog
         public string Host { get; set; }
         public string[] Tags { get; set; }
 
+        public int MaxRetries { get; set; } = 10;
+
         /// <summary>
         ///     URL of the server to send log events to.
         /// </summary>
@@ -100,9 +102,9 @@ namespace NLog.Target.Datadog
             base.InitializeTarget();
 
             if (UseTCP)
-                _client = new DatadogTcpClient(Url, Port, UseSSL, ApiKey);
+                _client = new DatadogTcpClient(Url, Port, UseSSL, ApiKey, MaxRetries);
             else
-                _client = new DatadogHttpClient(Url, ApiKey);
+                _client = new DatadogHttpClient(Url, ApiKey, MaxRetries);
         }
 
         protected override void Write(LogEventInfo logEvent)

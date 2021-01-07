@@ -15,14 +15,10 @@ namespace NLog.Target.Datadog
 {
     public class DatadogHttpClient : IDatadogClient
     {
+        private readonly int _maxRetries;
         private const string _content = "application/json";
         private const int _maxSize = 2 * 1024 * 1024 - 51; // Need to reserve space for at most 49 "," and "[" + "]"
         private const int _maxMessageSize = 256 * 1024;
-
-        /// <summary>
-        ///     Max number of retries when sending failed.
-        /// </summary>
-        private const int MaxRetries = 10;
 
         /// <summary>
         ///     Max backoff used when sending failed.
@@ -38,8 +34,9 @@ namespace NLog.Target.Datadog
 
         private readonly string _url;
 
-        public DatadogHttpClient(string url, string apiKey)
+        public DatadogHttpClient(string url, string apiKey, int maxRetries)
         {
+            _maxRetries = maxRetries;
             _client = new HttpClient();
             _url = $"{url}/v1/input/{apiKey}";
             InternalLogger.Info("Creating HTTP client with config: {0}", _url);
@@ -101,7 +98,7 @@ namespace NLog.Target.Datadog
         private async Task Post(string payload)
         {
             var content = new StringContent(payload, Encoding.UTF8, _content);
-            for (var retry = 0; retry < MaxRetries; retry++)
+            for (var retry = 0; retry < _maxRetries; retry++)
             {
                 var backoff = (int) Math.Min(Math.Pow(2, retry), MaxBackoff);
                 if (retry > 0) await Task.Delay(backoff * 1000);
@@ -122,7 +119,7 @@ namespace NLog.Target.Datadog
                 }
             }
 
-            throw new CannotSendLogEventException(MaxRetries);
+            throw new CannotSendLogEventException(_maxRetries);
         }
     }
 }

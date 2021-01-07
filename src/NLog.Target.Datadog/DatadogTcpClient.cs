@@ -30,11 +30,6 @@ namespace NLog.Target.Datadog
         private const string MessageDelimiter = "\n";
 
         /// <summary>
-        ///     Max number of retries when sending failed.
-        /// </summary>
-        private const int MaxRetries = 5;
-
-        /// <summary>
         ///     Max backoff used when sending failed.
         /// </summary>
         private const int MaxBackoff = 30;
@@ -45,18 +40,20 @@ namespace NLog.Target.Datadog
         private static readonly UTF8Encoding UTF8 = new UTF8Encoding();
 
         private readonly string _apiKey;
+        private readonly int _maxRetries;
         private readonly int _port;
         private readonly string _url;
         private readonly bool _useSsl;
         private TcpClient _client;
         private Stream _stream;
 
-        public DatadogTcpClient(string url, int port, bool useSSL, string apiKey)
+        public DatadogTcpClient(string url, int port, bool useSSL, string apiKey, int maxRetries)
         {
             _url = url;
             _port = port;
             _useSsl = useSSL;
             _apiKey = apiKey;
+            _maxRetries = maxRetries;
             InternalLogger.Info("Creating TCP client with config: URL: {0}, Port: {1}, UseSSL: {2}", url, port, useSSL);
         }
 
@@ -117,7 +114,7 @@ namespace NLog.Target.Datadog
 
             var payload = payloadBuilder.ToString();
 
-            for (var retry = 0; retry < MaxRetries; retry++)
+            for (var retry = 0; retry < _maxRetries; retry++)
             {
                 var backoff = (int) Math.Min(Math.Pow(retry, 2), MaxBackoff);
                 if (retry > 0) await Task.Delay(backoff * 1000);

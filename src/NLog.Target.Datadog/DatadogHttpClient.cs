@@ -69,7 +69,7 @@ namespace NLog.Target.Datadog
                 if (currentSize + logSize > _maxSize)
                 {
                     // Flush the chunkBuffer to the chunks and reset the chunkBuffer
-                    chunks.Add(GenerateChunk(chunkBuffer, ",", "[", "]"));
+                    chunks.Add(GenerateChunk(chunkBuffer, ",", "[", "]", currentSize));
                     chunkBuffer.Clear();
                     currentSize = 0;
                 }
@@ -78,14 +78,24 @@ namespace NLog.Target.Datadog
                 currentSize += logSize;
             }
 
-            chunks.Add(GenerateChunk(chunkBuffer, ",", "[", "]"));
+            chunks.Add(GenerateChunk(chunkBuffer, ",", "[", "]", currentSize));
 
             return chunks;
         }
 
-        private static string GenerateChunk(IEnumerable<string> collection, string delimiter, string prefix, string suffix)
+        private static string GenerateChunk(IList<string> collection, string delimiter, string prefix, string suffix, int size)
         {
-            return prefix + string.Join(delimiter, collection) + suffix;
+            var capacity = size + prefix.Length + suffix.Length + (collection.Count * delimiter.Length);
+            var buf = new StringBuilder(capacity);
+            buf.Append(prefix);
+            for (var i = 0; i < collection.Count; ++i)
+            {
+                if (i > 0) buf.Append(delimiter);
+                buf.Append(collection[i]);
+            }
+            buf.Append(suffix);
+            return buf.ToString();
+            //return prefix + string.Join(delimiter, collection) + suffix;
         }
 
         private async Task Post(string payload)

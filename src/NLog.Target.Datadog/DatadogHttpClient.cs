@@ -44,20 +44,19 @@ namespace NLog.Target.Datadog
             InternalLogger.Info("Creating HTTP client with config: {0}", _url);
         }
 
-        public void WriteAsync(IEnumerable<string> events)
+        public Task WriteAsync(IReadOnlyCollection<string> events)
         {
             var chunks = SerializeEvents(events);
             var tasks = chunks.Select(Post);
-            Task.WhenAll(tasks).GetAwaiter().GetResult();
+            return Task.WhenAll(tasks);
         }
 
-        private List<string> SerializeEvents(IEnumerable<string> events)
+        private List<string> SerializeEvents(IReadOnlyCollection<string> events)
         {
-            List<string> chunks = new List<string>();
-
+            var chunks = new List<string>();
             int currentSize = 0;
 
-            var chunkBuffer = new List<string>(events.Count());
+            var chunkBuffer = new List<string>(events.Count);
             foreach (var formattedLog in events)
             {
                 var logSize = Encoding.UTF8.GetByteCount(formattedLog);
@@ -107,8 +106,9 @@ namespace NLog.Target.Datadog
                     if ((int)result.StatusCode >= 400) { break; }
                     if (result.IsSuccessStatusCode) { return; }
                 }
-                catch (Exception)
+                catch (Exception e)
                 {
+                    InternalLogger.Warn(e.ToString());
                 }
             }
 

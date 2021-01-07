@@ -66,19 +66,19 @@ namespace NLog.Target.Datadog
         public string ExcludedProperties { get; set; }
 
         /// <summary>
-        /// Gets or sets a list of additional fields to add to the elasticsearch document.
+        /// Gets or sets a list of additional fields to add to the Elasticsearch document.
         /// </summary>
         [ArrayParameter(typeof(Field), "field")]
         public IList<Field> Fields { get; set; } = new List<Field>();
 
         private IDatadogClient _client;
 
-        private HashSet<string> _excludedProperties = new HashSet<string>(new[] { "CallerMemberName", "CallerFilePath", "CallerLineNumber", "MachineName", "ThreadId" });
+        private readonly HashSet<string> _excludedProperties = new HashSet<string>(new[] { "CallerMemberName", "CallerFilePath", "CallerLineNumber", "MachineName", "ThreadId" });
         private JsonSerializer _jsonSerializer;
         private readonly Lazy<JsonSerializerSettings> _jsonSerializerSettings = new Lazy<JsonSerializerSettings>(CreateJsonSerializerSettings, LazyThreadSafetyMode.PublicationOnly);
 
         private JsonSerializer JsonSerializer => _jsonSerializer ?? (_jsonSerializer = JsonSerializer.CreateDefault(_jsonSerializerSettings.Value));
-        private static readonly JsonSerializerSettings settings = new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore };
+        private static readonly JsonSerializerSettings Settings = new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore };
 
         public DataDogTarget()
         {
@@ -129,7 +129,7 @@ namespace NLog.Target.Datadog
                     return;
                 }
 
-                var formattedEvents = events.Select(FormPayload);
+                var formattedEvents = events.Select(FormPayload).ToArray();
                 _client.WriteAsync(formattedEvents);
 
                 foreach (var ev in events)
@@ -207,7 +207,7 @@ namespace NLog.Target.Datadog
                 }
             }
 
-            var result = JsonConvert.SerializeObject(document, Formatting.None, settings);
+            var result = JsonConvert.SerializeObject(document, Formatting.None, Settings);
             return result;
         }
 

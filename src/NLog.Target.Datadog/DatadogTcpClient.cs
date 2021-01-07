@@ -80,9 +80,9 @@ namespace NLog.Target.Datadog
             }
         }
 
-        public void WriteAsync(IEnumerable<string> events)
+        public Task WriteAsync(IReadOnlyCollection<string> events)
         {
-            Task.WhenAll(WriteAsyncImplementation(events)).GetAwaiter().GetResult();
+            return Task.WhenAll(WriteAsyncImplementation(events));
         }
 
         private async Task WriteAsyncImplementation(IEnumerable<string> events)
@@ -121,7 +121,7 @@ namespace NLog.Target.Datadog
                 {
                     InternalLogger.Trace("Sending payload to Datadog: {0}", payload);
                     byte[] data = UTF8.GetBytes(payload);
-                    _stream.Write(data, 0, data.Length);
+                    await _stream.WriteAsync(data, 0, data.Length);
                     return;
                 }
                 catch (Exception e)

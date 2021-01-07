@@ -4,8 +4,6 @@ VisualStudioVersion = 16.0.29209.62
 MinimumVisualStudioVersion = 15.0.26124.0
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{D0A5A0BA-56F9-4C56-8785-8C9F23A3B411}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Serilog.Sinks.Datadog.Logs", "src\Serilog.Sinks.Datadog.Logs\Serilog.Sinks.Datadog.Logs.csproj", "{897105F7-58A7-4849-98A8-EB8EDD450E47}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NLog.Target.Datadog", "src\NLog.Target.Datadog\NLog.Target.Datadog.csproj", "{88770ED9-238C-441A-A37F-D44827EAF6E2}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NLog.Targets.Datadog.Tests", "src\NLog.Targets.Datadog.Tests\NLog.Targets.Datadog.Tests.csproj", "{C6124FF1-2304-40D6-8CF5-9F316AC1F7BE}"
@@ -20,18 +18,6 @@ Global
 		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{897105F7-58A7-4849-98A8-EB8EDD450E47}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{897105F7-58A7-4849-98A8-EB8EDD450E47}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{897105F7-58A7-4849-98A8-EB8EDD450E47}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{897105F7-58A7-4849-98A8-EB8EDD450E47}.Debug|x64.Build.0 = Debug|Any CPU
-		{897105F7-58A7-4849-98A8-EB8EDD450E47}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{897105F7-58A7-4849-98A8-EB8EDD450E47}.Debug|x86.Build.0 = Debug|Any CPU
-		{897105F7-58A7-4849-98A8-EB8EDD450E47}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{897105F7-58A7-4849-98A8-EB8EDD450E47}.Release|Any CPU.Build.0 = Release|Any CPU
-		{897105F7-58A7-4849-98A8-EB8EDD450E47}.Release|x64.ActiveCfg = Release|Any CPU
-		{897105F7-58A7-4849-98A8-EB8EDD450E47}.Release|x64.Build.0 = Release|Any CPU
-		{897105F7-58A7-4849-98A8-EB8EDD450E47}.Release|x86.ActiveCfg = Release|Any CPU
-		{897105F7-58A7-4849-98A8-EB8EDD450E47}.Release|x86.Build.0 = Release|Any CPU
 		{88770ED9-238C-441A-A37F-D44827EAF6E2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{88770ED9-238C-441A-A37F-D44827EAF6E2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{88770ED9-238C-441A-A37F-D44827EAF6E2}.Debug|x64.ActiveCfg = Debug|Any CPU
@@ -61,7 +47,6 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
-		{897105F7-58A7-4849-98A8-EB8EDD450E47} = {D0A5A0BA-56F9-4C56-8785-8C9F23A3B411}
 		{88770ED9-238C-441A-A37F-D44827EAF6E2} = {D0A5A0BA-56F9-4C56-8785-8C9F23A3B411}
 		{C6124FF1-2304-40D6-8CF5-9F316AC1F7BE} = {D0A5A0BA-56F9-4C56-8785-8C9F23A3B411}
 	EndGlobalSection

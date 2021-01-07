@@ -10,9 +10,9 @@
     <Description>NLog Target that sends log events to Datadog https://www.datadoghq.com/</Description>
     <Copyright>Datadog, Inc. 2018</Copyright>
     <PackageTags>nlog;logging;datadog;target</PackageTags>
-    <PackageProjectUrl>https://github.com/DataDog/serilog-sinks-datadog-logs/</PackageProjectUrl>
-    <PackageLicenseUrl>https://github.com/DataDog/serilog-sinks-datadog-logs/blob/master/LICENSE</PackageLicenseUrl>
-    <PackageIconUrl>http://serilog.net/images/serilog-sink-nuget.png</PackageIconUrl>
+    <PackageProjectUrl>https://github.com/dmitrynovik/nlog-target-datadog</PackageProjectUrl>
+    <PackageLicenseUrl>https://github.com/dmitrynovik/nlog-target-datadog/blob/master/LICENSE</PackageLicenseUrl>
+    <PackageIconUrl>https://nlog-project.org/images/NLog-logo-only-inverse.png</PackageIconUrl>
   </PropertyGroup>
 
   <ItemGroup>

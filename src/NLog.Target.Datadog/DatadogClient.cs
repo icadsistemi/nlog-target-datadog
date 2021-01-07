@@ -12,7 +12,7 @@ namespace NLog.Target.Datadog
         /// <summary>
         /// Send payload to Datadog logs-backend.
         /// </summary>
-        /// <param name="events">Serilog events to send.</param>
+        /// <param name="events">Events to send.</param>
         void WriteAsync(IEnumerable<string> events);
 
         /// <summary>

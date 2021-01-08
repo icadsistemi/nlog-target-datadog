@@ -97,7 +97,7 @@ namespace NLog.Targets.ElasticSearch.Tests
         {
             var elasticTarget = new DataDogTarget
             {
-                ApiKey = "3f5d1caba8e3c8595c75e44e695f5470"
+                ApiKey = "<YOUR API KEY>"
             };
 
             var rule = new LoggingRule("*", elasticTarget);

@@ -97,6 +97,7 @@ namespace NLog.Targets.ElasticSearch.Tests
         {
             var elasticTarget = new DataDogTarget
             {
+                // IMPORTANT! replace "YOUR API KEY" with your DataDog API key
                 ApiKey = "<YOUR API KEY>"
             };
 

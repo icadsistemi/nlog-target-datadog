@@ -15,7 +15,7 @@ You can override the default behavior and use **TCP** forwarding by manually spe
 
 You can also add the following properties: source, service, host, tags.
 
-* Example with HTTP:
+* Example with HTTP (replace "YOUR API KEY" with your DataDog API key):
 
 ```xml
 <?xml version="1.0" encoding="utf-8"?>

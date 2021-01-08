@@ -5,7 +5,7 @@ using NLog.Config;
 using NLog.Target.Datadog;
 using Xunit;
 
-namespace NLog.Targets.ElasticSearch.Tests
+namespace NLog.Targets.Datadog.Tests
 {
     public class TestData
     {

@@ -5,14 +5,18 @@
     <AssemblyName>NLog.Target.Datadog</AssemblyName>
     <PackageId>NLog.Target.Datadog</PackageId>
     <PackageVersion>0.3.0</PackageVersion>
-    <Authors>Datadog</Authors>
+    <Authors>Dmitry Novik</Authors>
     <Title>NLog Target Datadog</Title>
     <Description>NLog Target that sends log events to Datadog https://www.datadoghq.com/</Description>
-    <Copyright>Datadog, Inc. 2018</Copyright>
+    <Copyright></Copyright>
     <PackageTags>nlog;logging;datadog;target</PackageTags>
     <PackageProjectUrl>https://github.com/dmitrynovik/nlog-target-datadog</PackageProjectUrl>
     <PackageLicenseUrl>https://github.com/dmitrynovik/nlog-target-datadog/blob/master/LICENSE</PackageLicenseUrl>
     <PackageIconUrl>https://nlog-project.org/images/NLog-logo-only-inverse.png</PackageIconUrl>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Company />
+    <RepositoryUrl>https://github.com/dmitrynovik/nlog-target-datadog</RepositoryUrl>
+    <RepositoryType>Git</RepositoryType>
   </PropertyGroup>
 
   <ItemGroup>

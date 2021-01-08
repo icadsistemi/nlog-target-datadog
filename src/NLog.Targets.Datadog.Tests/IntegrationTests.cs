@@ -20,7 +20,7 @@ namespace NLog.Targets.ElasticSearch.Tests
         public void SimpleLogTest()
         {
             var logger = ConfigureLogger(LogLevel.Info);
-            logger.Info("Hello elasticsearch");
+            logger.Info("Hello NLog.Target.DataDog!");
             LogManager.Flush();
         }
 
@@ -63,12 +63,12 @@ namespace NLog.Targets.ElasticSearch.Tests
 
             var logger = LogManager.GetLogger("Example");
 
-            logger.Trace("Hello elasticsearch");
-            logger.Debug("Hello elasticsearch");
-            logger.Info("Hello elasticsearch");
-            logger.Warn("Hello elasticsearch");
-            logger.Error("Hello elasticsearch");
-            logger.Fatal("Hello elasticsearch");
+            logger.Trace("Hello NLog.Target.DataDog!");
+            logger.Debug("Hello NLog.Target.DataDog!");
+            logger.Info("Hello NLog.Target.DataDog!");
+            logger.Warn("Hello NLog.Target.DataDog!");
+            logger.Error("Hello NLog.Target.DataDog!");
+            logger.Fatal("Hello NLog.Target.DataDog!");
 
             LogManager.Flush();
         }

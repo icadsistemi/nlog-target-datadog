@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Linq;
+using FluentAssertions;
 using NLog.Config;
 using NLog.Target.Datadog;
 using Xunit;
@@ -52,6 +54,10 @@ namespace NLog.Targets.ElasticSearch.Tests
         public void ReadFromConfigTest()
         {
             LogManager.Configuration = new XmlLoggingConfiguration("NLog.Targets.Datadog.Tests.dll.config");
+            
+            var dataDogTarget = LogManager.Configuration.AllTargets.OfType<DataDogTarget>().First();
+            dataDogTarget.MaxRetries.Should().Be(666);
+
             var logger = LogManager.GetLogger("Example");
 
             logger.Trace("Hello elasticsearch");

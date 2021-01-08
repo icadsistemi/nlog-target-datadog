@@ -4,7 +4,6 @@
 // Copyright 2019 Datadog, Inc.
 
 using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace NLog.Target.Datadog
 {

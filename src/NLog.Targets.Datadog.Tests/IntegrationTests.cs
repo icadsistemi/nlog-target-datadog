@@ -55,8 +55,11 @@ namespace NLog.Targets.ElasticSearch.Tests
         {
             LogManager.Configuration = new XmlLoggingConfiguration("NLog.Targets.Datadog.Tests.dll.config");
             
-            var dataDogTarget = LogManager.Configuration.AllTargets.OfType<DataDogTarget>().First();
-            dataDogTarget.MaxRetries.Should().Be(666);
+            LogManager.Configuration.AllTargets
+                .OfType<DataDogTarget>()
+                .First()
+                .MaxRetries
+                .Should().Be(666);
 
             var logger = LogManager.GetLogger("Example");
 

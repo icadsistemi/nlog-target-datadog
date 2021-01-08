@@ -16,11 +16,13 @@ namespace NLog.Targets.Datadog.Tests
 
     public class IntegrationTests
     {
+        private const string Greeting = "Hello from NLog.Target.DataDog!";
+
         [Fact(Skip = "Integration")]
         public void SimpleLogTest()
         {
             var logger = ConfigureLogger(LogLevel.Info);
-            logger.Info("Hello NLog.Target.DataDog!");
+            logger.Info(Greeting);
             LogManager.Flush();
         }
 
@@ -63,12 +65,12 @@ namespace NLog.Targets.Datadog.Tests
 
             var logger = LogManager.GetLogger("Example");
 
-            logger.Trace("Hello NLog.Target.DataDog!");
-            logger.Debug("Hello NLog.Target.DataDog!");
-            logger.Info("Hello NLog.Target.DataDog!");
-            logger.Warn("Hello NLog.Target.DataDog!");
-            logger.Error("Hello NLog.Target.DataDog!");
-            logger.Fatal("Hello NLog.Target.DataDog!");
+            logger.Trace(Greeting);
+            logger.Debug(Greeting);
+            logger.Info(Greeting);
+            logger.Warn(Greeting);
+            logger.Error(Greeting);
+            logger.Fatal(Greeting);
 
             LogManager.Flush();
         }

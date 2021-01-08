@@ -17,48 +17,17 @@ namespace NLog.Targets.ElasticSearch.Tests
         [Fact(Skip = "Integration")]
         public void SimpleLogTest()
         {
-            var elasticTarget = new DataDogTarget
-            {
-                ApiKey = "3f5d1caba8e3c8595c75e44e695f5470"
-            };
-
-            var rule = new LoggingRule("*", elasticTarget);
-            rule.EnableLoggingForLevel(LogLevel.Info);
-
-            var config = new LoggingConfiguration();
-            config.LoggingRules.Add(rule);
-
-            LogManager.Configuration = config;
-
-            var logger = LogManager.GetLogger("Example");
-
+            var logger = ConfigureLogger(LogLevel.Info);
             logger.Info("Hello elasticsearch");
-
             LogManager.Flush();
         }
 
         [Fact(Skip = "Integration")]
         public void ExceptionTest()
         {
-            var elasticTarget = new DataDogTarget
-            {
-                ApiKey = "3f5d1caba8e3c8595c75e44e695f5470"
-            };
-
-            var rule = new LoggingRule("*", elasticTarget);
-            rule.EnableLoggingForLevel(LogLevel.Error);
-
-            var config = new LoggingConfiguration();
-            config.LoggingRules.Add(rule);
-
-            LogManager.Configuration = config;
-
-            var logger = LogManager.GetLogger("Example");
-
+            var logger = ConfigureLogger(LogLevel.Error);
             var exception = new ArgumentException("Some random error message");
-
             logger.Error(exception, "An exception occured");
-
             LogManager.Flush();
         }
 
@@ -69,14 +38,12 @@ namespace NLog.Targets.ElasticSearch.Tests
             GlobalDiagnosticsContext.Set("Version", "1.2.3-test");
             var logger = LogManager.GetLogger("Example");
 
-            var data = new TestData
+            logger.Info("Here is some structured data {@person}", new TestData
             {
                 Name = "Foo",
                 Age = 20,
                 Id = Guid.NewGuid()
-            };
-
-            logger.Info("Here is some structured data {@person}", data);
+            });
 
             LogManager.Flush();
         }
@@ -85,9 +52,7 @@ namespace NLog.Targets.ElasticSearch.Tests
         public void ReadFromConfigTest()
         {
             LogManager.Configuration = new XmlLoggingConfiguration("NLog.Targets.Datadog.Tests.dll.config");
-
             var logger = LogManager.GetLogger("Example");
-
 
             logger.Trace("Hello elasticsearch");
             logger.Debug("Hello elasticsearch");
@@ -103,9 +68,7 @@ namespace NLog.Targets.ElasticSearch.Tests
         public void TestException()
         {
             LogManager.Configuration = new XmlLoggingConfiguration("NLog.Targets.Datadog.Tests.dll.config");
-
             var logger = LogManager.GetLogger("Example");
-
             try
             {
                 Foo();
@@ -114,18 +77,31 @@ namespace NLog.Targets.ElasticSearch.Tests
             {
                 logger.Error(e, "Oops");
             }
-
             LogManager.Flush();
         }
 
-        private void Foo()
+        private static void Foo() => Bar();
+
+        private static void Bar() => throw new Exception("Oops Exception");
+
+        private static Logger ConfigureLogger(LogLevel level)
         {
-            Bar();
+            var elasticTarget = new DataDogTarget
+            {
+                ApiKey = "3f5d1caba8e3c8595c75e44e695f5470"
+            };
+
+            var rule = new LoggingRule("*", elasticTarget);
+            rule.EnableLoggingForLevel(level);
+
+            var config = new LoggingConfiguration();
+            config.LoggingRules.Add(rule);
+
+            LogManager.Configuration = config;
+
+            var logger = LogManager.GetLogger("Example");
+            return logger;
         }
 
-        private void Bar()
-        {
-            throw new Exception("Oops Exception");
-        }
     }
 }

@@ -42,18 +42,18 @@ namespace NLog.Target.Datadog
             InternalLogger.Info("Creating HTTP client with config: {0}", _url);
         }
 
-        public Task WriteAsync(IReadOnlyCollection<string> events)
+        public void Write(IReadOnlyCollection<string> events)
         {
             var chunks = SerializeEvents(events);
             var tasks = chunks.Select(Post);
-            return Task.WhenAll(tasks);
+            Task.WhenAll(tasks).GetAwaiter().GetResult();
         }
 
         void IDatadogClient.Close()
         {
         }
 
-        private List<string> SerializeEvents(IReadOnlyCollection<string> events)
+        private static IList<string> SerializeEvents(IReadOnlyCollection<string> events)
         {
             var chunks = new List<string>();
             var currentSize = 0;
@@ -76,12 +76,12 @@ namespace NLog.Target.Datadog
             }
 
             chunks.Add(GenerateChunk(chunkBuffer, ",", "[", "]", currentSize));
-
             return chunks;
         }
 
         private static string GenerateChunk(IList<string> collection, string delimiter, string prefix, string suffix, int size)
         {
+            // The code below is optimized for performance:
             if (collection.Count <= 0)
                 return prefix + suffix;
 

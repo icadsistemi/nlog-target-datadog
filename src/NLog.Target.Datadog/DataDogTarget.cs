@@ -128,7 +128,7 @@ namespace NLog.Target.Datadog
                 if (!events.Any()) return;
 
                 var formattedEvents = events.Select(FormPayload).ToArray();
-                _client.WriteAsync(formattedEvents);
+                _client.Write(formattedEvents);
 
                 foreach (var ev in events) ev.Continuation(null);
             }

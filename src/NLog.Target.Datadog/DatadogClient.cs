@@ -14,7 +14,7 @@ namespace NLog.Target.Datadog
         ///     Send payload to Datadog logs-backend.
         /// </summary>
         /// <param name="events">Events to send.</param>
-        Task WriteAsync(IReadOnlyCollection<string> events);
+        void Write(IReadOnlyCollection<string> events);
 
         /// <summary>
         ///     Cleanup existing resources.

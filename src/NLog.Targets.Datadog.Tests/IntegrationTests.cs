@@ -28,7 +28,7 @@ namespace NLog.Targets.Datadog.Tests
             LogManager.Flush();
         }
 
-        [Fact(Skip = "Integration")]
+        [Fact/*(Skip = "Integration")*/]
         public async Task NonStop_TerminateMe_LogTest()
         {
             var logger = ConfigureLogger(LogLevel.Info);
@@ -111,16 +111,15 @@ namespace NLog.Targets.Datadog.Tests
 
         private static Logger ConfigureLogger(LogLevel level)
         {
-            var source = Assembly.GetExecutingAssembly()?.GetName().Name;
             var config = new LoggingConfiguration();
 
             var elasticTarget = new DataDogTarget
             {
                 // IMPORTANT! replace "YOUR API KEY" with your DataDog API key
-                ApiKey = "< YOUR API KEY >",
+                ApiKey = "YOUR API KEY",
                 MaxRetries = 10000,
-                Service = source,
-                Source = source
+                Service = Assembly.GetExecutingAssembly()?.GetName().Name,
+                Source = Environment.MachineName
             };
             var rule = new LoggingRule("*", elasticTarget);
             rule.EnableLoggingForLevel(level);

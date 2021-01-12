@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Linq;
+using System.Reflection;
+using System.Threading.Tasks;
 using FluentAssertions;
 using NLog.Config;
 using NLog.Target.Datadog;
@@ -24,6 +26,18 @@ namespace NLog.Targets.Datadog.Tests
             var logger = ConfigureLogger(LogLevel.Info);
             logger.Info(Greeting);
             LogManager.Flush();
+        }
+
+        [Fact(Skip = "Integration")]
+        public async Task NonStop_TerminateMe_LogTest()
+        {
+            var logger = ConfigureLogger(LogLevel.Info);
+            for (int i = 0; i < int.MaxValue; ++i)
+            {
+                logger.Info(Greeting + $": {i}");
+                LogManager.Flush();
+                await Task.Delay(1000);
+            }
         }
 
         [Fact(Skip = "Integration")]
@@ -97,17 +111,33 @@ namespace NLog.Targets.Datadog.Tests
 
         private static Logger ConfigureLogger(LogLevel level)
         {
+            var source = Assembly.GetExecutingAssembly()?.GetName().Name;
+            var config = new LoggingConfiguration();
+
             var elasticTarget = new DataDogTarget
             {
                 // IMPORTANT! replace "YOUR API KEY" with your DataDog API key
-                ApiKey = "<YOUR API KEY>"
+                ApiKey = "< YOUR API KEY >",
+                MaxRetries = 10000,
+                Service = source,
+                Source = source
             };
-
             var rule = new LoggingRule("*", elasticTarget);
             rule.EnableLoggingForLevel(level);
-
-            var config = new LoggingConfiguration();
+            config.AddTarget(elasticTarget);
             config.LoggingRules.Add(rule);
+
+            var consoleTarget = new ConsoleTarget("console");
+            var consoleRule = new LoggingRule("*", consoleTarget);
+            consoleRule.EnableLoggingForLevel(level);
+            config.AddTarget(consoleTarget);
+            config.LoggingRules.Add(consoleRule);
+
+            var debugTarget = new DebugTarget("debug");
+            var debugRule = new LoggingRule("*", debugTarget);
+            debugRule.EnableLoggingForLevel(level);
+            config.AddTarget(debugTarget);
+            config.LoggingRules.Add(debugRule);
 
             LogManager.Configuration = config;
 

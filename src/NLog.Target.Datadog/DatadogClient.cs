@@ -4,6 +4,7 @@
 // Copyright 2019 Datadog, Inc.
 
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace NLog.Target.Datadog
 {
@@ -13,7 +14,7 @@ namespace NLog.Target.Datadog
         ///     Send payload to Datadog logs-backend.
         /// </summary>
         /// <param name="events">Events to send.</param>
-        void Write(IReadOnlyCollection<string> events);
+        Task Write(IReadOnlyCollection<string> events);
 
         /// <summary>
         ///     Cleanup existing resources.

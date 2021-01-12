@@ -57,10 +57,7 @@ namespace NLog.Target.Datadog
             InternalLogger.Info("Creating TCP client with config: URL: {0}, Port: {1}, UseSSL: {2}", url, port, useSSL);
         }
 
-        public void Write(IReadOnlyCollection<string> events)
-        {
-            Task.WhenAll(WriteAsyncImplementation(events)).GetAwaiter().GetResult();
-        }
+        public Task Write(IReadOnlyCollection<string> events) => Task.WhenAll(WriteAsyncImplementation(events));
 
         /// <summary>
         ///     Close the client.

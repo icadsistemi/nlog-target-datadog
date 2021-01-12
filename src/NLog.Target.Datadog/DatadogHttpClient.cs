@@ -42,11 +42,11 @@ namespace NLog.Target.Datadog
             InternalLogger.Info("Creating HTTP client with config: {0}", _url);
         }
 
-        public void Write(IReadOnlyCollection<string> events)
+        public Task Write(IReadOnlyCollection<string> events)
         {
             var chunks = SerializeEvents(events);
             var tasks = chunks.Select(Post);
-            Task.WhenAll(tasks).GetAwaiter().GetResult();
+            return Task.WhenAll(tasks);
         }
 
         void IDatadogClient.Close()

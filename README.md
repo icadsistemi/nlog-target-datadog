@@ -8,13 +8,6 @@ A NLog target that send events and logs staight away to Datadog. By default the 
 Note: For other .NET versions, ensure that the default TLS version used is `1.2`
 
 
-By default the logs are forwarded to Datadog via **HTTPS** on port 443 to the US site.
-You can change the site to EU by using the `url` property and set it to `https://http-intake.logs.datadoghq.eu`.
-
-You can override the default behavior and use **TCP** forwarding by manually specifing the following properties (url, port, useSSL, useTCP).
-
-You can also add the following properties: source, service, host, tags.
-
 ## Parameters
 ### maxRetries
 The number of retries to log to `DataDog` before giving up, if greater than `0`. Default: `0`. 
@@ -36,6 +29,10 @@ if using `TCP`, the insecure (no SSL) port
 
 ### apiKey
 Your API key.
+
+You can also add the following properties: source, service, host, tags.
+
+## Confifuration
 
 * Example with HTTP (replace "YOUR API KEY" with your DataDog API key):
 

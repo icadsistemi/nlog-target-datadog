@@ -48,9 +48,9 @@ namespace NLog.Targets.Datadog.Tests
 
             Task.Run(() =>
             {
-                var prc = Process.GetCurrentProcess();
                 GC.Collect(GC.MaxGeneration, GCCollectionMode.Forced, true);
-                var size1 = prc.PrivateMemorySize64;
+                var size1 = Process.GetCurrentProcess().PrivateMemorySize64;
+                _testOutputHelper.WriteLine("Memory before test: {0}", size1);
 
                 for (int i = 0; i < logs; ++i)
                 {
@@ -61,8 +61,9 @@ namespace NLog.Targets.Datadog.Tests
                 while (true)
                 {
                     GC.Collect(GC.MaxGeneration, GCCollectionMode.Forced, true);
-                    var size2 = prc.PrivateMemorySize64;
+                    var size2 = Process.GetCurrentProcess().PrivateMemorySize64;
                     Thread.Sleep(10000);
+                    _testOutputHelper.WriteLine("Memory after test: {0}", size2);
                 }
             }).GetAwaiter().GetResult();
         }

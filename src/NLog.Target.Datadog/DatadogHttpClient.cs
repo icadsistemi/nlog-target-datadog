@@ -13,7 +13,7 @@ using NLog.Common;
 
 namespace NLog.Target.Datadog
 {
-    public class DatadogHttpClient : IDatadogClient
+    public class DatadogHttpClient : IDatadogClient, IDisposable
     {
         private readonly int _maxRetries;
         private const string _content = "application/json";
@@ -42,16 +42,17 @@ namespace NLog.Target.Datadog
             InternalLogger.Info("Creating HTTP client with config: {0}", _url);
         }
 
-        public Task Write(IReadOnlyCollection<string> events)
+        public Task WriteAsync(IReadOnlyCollection<string> events) => Task.WhenAll(DoWrite(events));
+        public void Write(IReadOnlyCollection<string> events) => Task.WhenAll(DoWrite(events)).GetAwaiter().GetResult();
+
+        private IEnumerable<Task> DoWrite(IReadOnlyCollection<string> events)
         {
             var chunks = SerializeEvents(events);
             var tasks = chunks.Select(Post);
-            return Task.WhenAll(tasks);
+            return tasks;
         }
 
-        void IDatadogClient.Close()
-        {
-        }
+        public void Close() => _client?.Dispose();
 
         private static IList<string> SerializeEvents(IReadOnlyCollection<string> events)
         {
@@ -125,5 +126,7 @@ namespace NLog.Target.Datadog
 
             throw new CannotSendLogEventException(_maxRetries);
         }
+
+        public void Dispose() => Close();
     }
 }

@@ -17,7 +17,7 @@ namespace NLog.Target.Datadog
     /// <summary>
     ///     TCP Client that forwards log events to Datadog.
     /// </summary>
-    public class DatadogTcpClient : IDatadogClient
+    public class DatadogTcpClient : IDatadogClient, IDisposable
     {
         /// <summary>
         ///     API Key / message-content delimiter.
@@ -57,7 +57,8 @@ namespace NLog.Target.Datadog
             InternalLogger.Info("Creating TCP client with config: URL: {0}, Port: {1}, UseSSL: {2}", url, port, useSSL);
         }
 
-        public Task Write(IReadOnlyCollection<string> events) => Task.WhenAll(WriteAsyncImplementation(events));
+        public Task WriteAsync(IReadOnlyCollection<string> events) => Task.WhenAll(WriteAsyncImplementation(events));
+        public void Write(IReadOnlyCollection<string> events) => Task.WhenAll(WriteAsyncImplementation(events)).GetAwaiter().GetResult();
 
         /// <summary>
         ///     Close the client.
@@ -161,5 +162,7 @@ namespace NLog.Target.Datadog
         {
             return _client == null || _stream == null;
         }
+
+        public void Dispose() => Close();
     }
 }

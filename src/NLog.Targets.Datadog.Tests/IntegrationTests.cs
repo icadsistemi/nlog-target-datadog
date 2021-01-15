@@ -62,8 +62,9 @@ namespace NLog.Targets.Datadog.Tests
                 {
                     GC.Collect(GC.MaxGeneration, GCCollectionMode.Forced, true);
                     var size2 = Process.GetCurrentProcess().PrivateMemorySize64;
-                    Thread.Sleep(10000);
                     _testOutputHelper.WriteLine("Memory after test: {0}", size2);
+
+                    Thread.Sleep(10000);
                 }
             }).GetAwaiter().GetResult();
         }

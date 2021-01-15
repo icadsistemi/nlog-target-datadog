@@ -1,11 +1,14 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
 using NLog.Config;
 using NLog.Target.Datadog;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace NLog.Targets.Datadog.Tests
 {
@@ -18,6 +21,13 @@ namespace NLog.Targets.Datadog.Tests
 
     public class IntegrationTests
     {
+        private readonly ITestOutputHelper _testOutputHelper;
+
+        public IntegrationTests(ITestOutputHelper testOutputHelper)
+        {
+            _testOutputHelper = testOutputHelper;
+        }
+
         private const string Greeting = "Hello from NLog.Target.DataDog!";
 
         [Fact(Skip = "Integration")]
@@ -28,16 +38,33 @@ namespace NLog.Targets.Datadog.Tests
             LogManager.Flush();
         }
 
-        [Fact/*(Skip = "Integration")*/]
-        public async Task NonStop_TerminateMe_LogTest()
+        [Fact(Skip = "Integration")]
+        public void NonStop_TerminateMe_LogTest()
         {
-            var logger = ConfigureLogger(LogLevel.Info);
-            for (int i = 0; i < int.MaxValue; ++i)
+            LogManager.Configuration = new XmlLoggingConfiguration("NLog.Targets.Datadog.Tests.dll.config");
+            var logger = LogManager.GetLogger("Example");
+
+            const int logs = 10000;
+
+            Task.Run(() =>
             {
-                logger.Info(Greeting + $": {i}");
-                LogManager.Flush();
-                await Task.Delay(1000);
-            }
+                var prc = Process.GetCurrentProcess();
+                GC.Collect(GC.MaxGeneration, GCCollectionMode.Forced, true);
+                var size1 = prc.PrivateMemorySize64;
+
+                for (int i = 0; i < logs; ++i)
+                {
+                    logger.Info($"{Greeting}: {i}");
+                    Thread.Sleep(10);
+                }
+
+                while (true)
+                {
+                    GC.Collect(GC.MaxGeneration, GCCollectionMode.Forced, true);
+                    var size2 = prc.PrivateMemorySize64;
+                    Thread.Sleep(10000);
+                }
+            }).GetAwaiter().GetResult();
         }
 
         [Fact(Skip = "Integration")]
@@ -75,7 +102,7 @@ namespace NLog.Targets.Datadog.Tests
                 .OfType<DataDogTarget>()
                 .First()
                 .MaxRetries
-                .Should().Be(666);
+                .Should().Be(1000000);
 
             var logger = LogManager.GetLogger("Example");
 

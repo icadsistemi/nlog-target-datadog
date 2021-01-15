@@ -102,7 +102,7 @@ namespace NLog.Target.Datadog
         private async Task Post(string payload)
         {
             var content = new StringContent(payload, Encoding.UTF8, _content);
-            for (var retry = 0; retry < _maxRetries; retry++)
+            for (var retry = 0; _maxRetries <= 0 || retry < _maxRetries; retry++)
             {
                 var backoff = (int) Math.Min(Math.Pow(2, retry), MaxBackoff);
                 if (retry > 0) await Task.Delay(backoff * 1000);

@@ -15,6 +15,28 @@ You can override the default behavior and use **TCP** forwarding by manually spe
 
 You can also add the following properties: source, service, host, tags.
 
+## Parameters
+### maxRetries
+The number of retries to log to `DataDog` before giving up, if greater than `0`. Default: `0`. 
+
+### url
+The url of DataDog intake service. Default: `https://http-intake.logs.datadoghq.com`
+
+### UseTCP
+If TCP instead HTTP to be used. Default: `false`
+
+### UseSSL
+if using `TCP`, if to use SSL
+
+### DDPort
+if using `TCP`, the secure (SSL) port
+
+### DDPortNoSSL
+if using `TCP`, the insecure (no SSL) port
+
+### apiKey
+Your API key.
+
 * Example with HTTP (replace "YOUR API KEY" with your DataDog API key):
 
 ```xml
@@ -29,35 +51,35 @@ You can also add the following properties: source, service, host, tags.
       <add assembly="NLog.Target.Datadog" />
     </extensions>
     <targets>
-      <target name="dataDogBuf" xsi:type="BufferingWrapper">
-        <target xsi:type="DataDog"
-                layout="${message}"
-                includeAllProperties="true"
-                maxRetries="666"
-                apiKey="YOUR API KEY">
+      <default-wrapper xsi:type="AsyncWrapper" overflowAction="Grow" timeToSleepBetweenBatches="1"
+      />
+      <target xsi:type="DataDog"
+              name="dataDog"
+              layout="${message}"
+              includeAllProperties="true"
+              apiKey="YOUR API KEY">
 
-          <field name="ddsource" layout="${machinename}" />
-          <field name="service" layout="${machinename}" />
-          <field name="host" layout="${machinename}" />
+        <field name="ddsource" layout="${machinename}" />
+        <field name="service" layout="${machinename}" />
+        <field name="host" layout="${machinename}" />
 
-          <field name="Logger" layout="${logger}" />
-          <field name="ProcessID" layout="${processid}" />
-          <field name="ProcessName" layout="${processname}" />
-          <field name="Thread" layout="${threadid}" />
-          <field name="ThreadName" layout="${threadname}" />
-          <field name="Class"
-                 layout="${callsite:className=true:methodName=false:fileName=false:includeSourcePath=false}" />
-          <field name="Method"
-                 layout="${callsite:className=false:methodName=true:fileName=false:includeSourcePath=false}" />
+        <field name="Logger" layout="${logger}" />
+        <field name="ProcessID" layout="${processid}" />
+        <field name="ProcessName" layout="${processname}" />
+        <field name="Thread" layout="${threadid}" />
+        <field name="ThreadName" layout="${threadname}" />
+        <field name="Class"
+               layout="${callsite:className=true:methodName=false:fileName=false:includeSourcePath=false}" />
+        <field name="Method"
+               layout="${callsite:className=false:methodName=true:fileName=false:includeSourcePath=false}" />
 
-          <field name="sessionId" layout="12345" />
-          <field name="Version" layout="${gdc:item=Version}" />
-          <field name="Environment" layout="${gdc:item=Version}" />
-        </target>
+        <field name="sessionId" layout="12345" />
+        <field name="Version" layout="${gdc:item=Version}" />
+        <field name="Environment" layout="${gdc:item=Version}" />
       </target>
     </targets>
     <rules>
-      <logger name="*" minlevel="Trace" writeTo="dataDogBuf" />
+      <logger name="*" minlevel="Trace" writeTo="dataDog" />
     </rules>
   </nlog>
   <startup>

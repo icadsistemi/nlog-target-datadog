@@ -4,7 +4,7 @@
     <TargetFrameworks>netstandard2.0;netstandard1.3;net45</TargetFrameworks>
     <AssemblyName>NLog.Target.Datadog</AssemblyName>
     <PackageId>NLog.Target.Datadog</PackageId>
-    <PackageVersion>1.0.4</PackageVersion>
+    <PackageVersion>1.0.5</PackageVersion>
     <Authors>Dmitry Novik</Authors>
     <Title>NLog Target Datadog</Title>
     <Description>NLog Target that sends log events to Datadog https://www.datadoghq.com/</Description>

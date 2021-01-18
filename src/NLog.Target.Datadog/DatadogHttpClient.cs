@@ -13,17 +13,11 @@ using NLog.Common;
 
 namespace NLog.Target.Datadog
 {
-    public class DatadogHttpClient : IDatadogClient, IDisposable
+    public class DatadogHttpClient : DataDogClient
     {
-        private readonly int _maxRetries;
         private const string _content = "application/json";
         private const int _maxSize = 2 * 1024 * 1024 - 51; // Need to reserve space for at most 49 "," and "[" + "]"
         private const int _maxMessageSize = 256 * 1024;
-
-        /// <summary>
-        ///     Max backoff used when sending failed.
-        /// </summary>
-        private const int MaxBackoff = 30;
 
         /// <summary>
         ///     Shared UTF8 encoder.
@@ -34,16 +28,16 @@ namespace NLog.Target.Datadog
 
         private readonly string _url;
 
-        public DatadogHttpClient(string url, string apiKey, int maxRetries)
+        public DatadogHttpClient(string url, string apiKey, int maxRetries, int maxBackoff) 
+            : base(maxRetries, maxBackoff)
         {
-            _maxRetries = maxRetries;
             _client = new HttpClient();
             _url = $"{url}/v1/input/{apiKey}";
             InternalLogger.Info("Creating HTTP client with config: {0}", _url);
         }
 
-        public Task WriteAsync(IReadOnlyCollection<string> events) => Task.WhenAll(DoWrite(events));
-        public void Write(IReadOnlyCollection<string> events) => Task.WhenAll(DoWrite(events)).GetAwaiter().GetResult();
+        public override Task WriteAsync(IReadOnlyCollection<string> events) => Task.WhenAll(DoWrite(events));
+        public override void Write(IReadOnlyCollection<string> events) => Task.WhenAll(DoWrite(events)).GetAwaiter().GetResult();
 
         private IEnumerable<Task> DoWrite(IReadOnlyCollection<string> events)
         {
@@ -52,7 +46,7 @@ namespace NLog.Target.Datadog
             return tasks;
         }
 
-        public void Close() => _client?.Dispose();
+        public override void Close() => _client?.Dispose();
 
         private static IList<string> SerializeEvents(IReadOnlyCollection<string> events)
         {
@@ -103,7 +97,7 @@ namespace NLog.Target.Datadog
         private async Task Post(string payload)
         {
             var content = new StringContent(payload, Encoding.UTF8, _content);
-            for (var retry = 0; retry < _maxRetries; retry++)
+            for (var retry = 0; retry < MaxRetries; retry++)
             {
                 var backoff = (int) Math.Min(Math.Pow(2, retry), MaxBackoff);
                 if (retry > 0) await Task.Delay(backoff * 1000);
@@ -124,9 +118,9 @@ namespace NLog.Target.Datadog
                 }
             }
 
-            throw new CannotSendLogEventException(_maxRetries);
+            throw new CannotSendLogEventException(MaxRetries);
         }
 
-        public void Dispose() => Close();
+        public override void Dispose() => Close();
     }
 }

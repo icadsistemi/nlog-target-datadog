@@ -44,6 +44,9 @@ namespace NLog.Target.Datadog
         private const int DefaultMaxRetries = 10;
         private int _maxRetries = DefaultMaxRetries;
 
+        private const int DefaultMaxBackoff = 30;
+        private int _maxBackoff = DefaultMaxBackoff;
+
         public DataDogTarget()
         {
             Name = "DataDog";
@@ -59,9 +62,17 @@ namespace NLog.Target.Datadog
         public string Host { get; set; }
         public string[] Tags { get; set; }
 
+        /// <summary>Max retries used to send a single batch.</summary>
         public int MaxRetries
         {
             get => _maxRetries <= 0 ? DefaultMaxRetries : _maxRetries;
+            set => _maxRetries = value;
+        }
+
+        /// <summary>Max waiting time used to retry to send a single failed batch again.</summary>
+        public int MaxBackoff
+        {
+            get => _maxBackoff <= 0 ? DefaultMaxBackoff : _maxRetries;
             set => _maxRetries = value;
         }
 
@@ -113,26 +124,20 @@ namespace NLog.Target.Datadog
                 useTCP = false;
 
             if (useTCP)
-                _client = new DatadogTcpClient(Url, Port, UseSSL, ApiKey, MaxRetries);
+                _client = new DatadogTcpClient(Url, Port, UseSSL, ApiKey, MaxRetries, MaxBackoff);
             else
-                _client = new DatadogHttpClient(Url, ApiKey, MaxRetries);
+                _client = new DatadogHttpClient(Url, ApiKey, MaxRetries, MaxBackoff);
         }
 
         protected override void Write(LogEventInfo logEvent)
         {
         }
 
-        protected override void Write(AsyncLogEventInfo logEvent)
-        {
-            EmitBatchAsync(new[] {logEvent});
-        }
+        protected override void Write(AsyncLogEventInfo logEvent) => EmitBatch(new[] {logEvent});
 
-        protected override void Write(IList<AsyncLogEventInfo> logEvents)
-        {
-            EmitBatchAsync(logEvents);
-        }
+        protected override void Write(IList<AsyncLogEventInfo> logEvents) => EmitBatch(logEvents);
 
-        protected void EmitBatchAsync(IList<AsyncLogEventInfo> events)
+        protected void EmitBatch(IList<AsyncLogEventInfo> events)
         {
             try
             {

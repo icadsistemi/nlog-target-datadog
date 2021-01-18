@@ -5,6 +5,7 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
+using FluentAssertions.Execution;
 using NLog.Config;
 using NLog.Target.Datadog;
 using Xunit;
@@ -99,23 +100,15 @@ namespace NLog.Targets.Datadog.Tests
         public void ReadFromConfigTest()
         {
             LogManager.Configuration = new XmlLoggingConfiguration("NLog.Targets.Datadog.Tests.dll.config");
-            
-            LogManager.Configuration.AllTargets
+            var dataDog = LogManager.Configuration.AllTargets
                 .OfType<DataDogTarget>()
-                .First()
-                .MaxRetries
-                .Should().Be(1000000);
+                .First();
 
-            var logger = LogManager.GetLogger("Example");
-
-            logger.Trace(Greeting);
-            logger.Debug(Greeting);
-            logger.Info(Greeting);
-            logger.Warn(Greeting);
-            logger.Error(Greeting);
-            logger.Fatal(Greeting);
-
-            LogManager.Flush();
+            using (new AssertionScope("read configuration properties"))
+            {
+                dataDog.MaxRetries.Should().Be(5);
+                dataDog.MaxBackoff.Should().Be(2);
+            }
         }
 
         [Fact]
@@ -146,7 +139,6 @@ namespace NLog.Targets.Datadog.Tests
             {
                 // IMPORTANT! replace "YOUR API KEY" with your DataDog API key
                 ApiKey = "YOUR API KEY",
-                MaxRetries = 10000,
                 Service = Assembly.GetExecutingAssembly()?.GetName().Name,
                 Source = Environment.MachineName
             };

@@ -17,7 +17,7 @@ namespace NLog.Target.Datadog
     /// <summary>
     ///     TCP Client that forwards log events to Datadog.
     /// </summary>
-    public class DatadogTcpClient : IDatadogClient, IDisposable
+    public class DatadogTcpClient : DataDogClient
     {
         /// <summary>
         ///     API Key / message-content delimiter.
@@ -47,7 +47,8 @@ namespace NLog.Target.Datadog
         private TcpClient _client;
         private Stream _stream;
 
-        public DatadogTcpClient(string url, int port, bool useSSL, string apiKey, int maxRetries)
+        public DatadogTcpClient(string url, int port, bool useSSL, string apiKey, int maxRetries, int maxBackoff)
+            : base(maxRetries, maxBackoff)
         {
             _url = url;
             _port = port;
@@ -57,13 +58,13 @@ namespace NLog.Target.Datadog
             InternalLogger.Info("Creating TCP client with config: URL: {0}, Port: {1}, UseSSL: {2}", url, port, useSSL);
         }
 
-        public Task WriteAsync(IReadOnlyCollection<string> events) => Task.WhenAll(WriteAsyncImplementation(events));
-        public void Write(IReadOnlyCollection<string> events) => Task.WhenAll(WriteAsyncImplementation(events)).GetAwaiter().GetResult();
+        public override Task WriteAsync(IReadOnlyCollection<string> events) => Task.WhenAll(WriteAsyncImplementation(events));
+        public override void Write(IReadOnlyCollection<string> events) => Task.WhenAll(WriteAsyncImplementation(events)).GetAwaiter().GetResult();
 
         /// <summary>
         ///     Close the client.
         /// </summary>
-        public void Close()
+        public override void Close()
         {
             if (!IsConnectionClosed())
             {
@@ -163,6 +164,6 @@ namespace NLog.Target.Datadog
             return _client == null || _stream == null;
         }
 
-        public void Dispose() => Close();
+        public override void Dispose() => Close();
     }
 }

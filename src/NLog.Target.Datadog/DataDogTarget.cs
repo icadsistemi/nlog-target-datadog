@@ -41,10 +41,10 @@ namespace NLog.Target.Datadog
         private IDatadogClient _client;
         private JsonSerializer _jsonSerializer;
 
-        private const int DefaultMaxRetries = 10;
+        private const int DefaultMaxRetries = 5;
         private int _maxRetries = DefaultMaxRetries;
 
-        private const int DefaultMaxBackoff = 30;
+        private const int DefaultMaxBackoff = 10;
         private int _maxBackoff = DefaultMaxBackoff;
 
         public DataDogTarget()

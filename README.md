@@ -10,7 +10,7 @@ Note: For other .NET versions, ensure that the default TLS version used is `1.2`
 
 ## Parameters
 ### maxRetries
-The number of retries to log to `DataDog` before giving up, if greater than `0`. Default: `0`. 
+The number of retries to log to `DataDog` before giving up. Default: `10`. 
 
 ### url
 The url of DataDog intake service. Default: `https://http-intake.logs.datadoghq.com`

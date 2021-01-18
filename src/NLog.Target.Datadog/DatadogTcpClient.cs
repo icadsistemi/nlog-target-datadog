@@ -112,7 +112,7 @@ namespace NLog.Target.Datadog
 
             var payload = payloadBuilder.ToString();
 
-            for (var retry = 0; _maxRetries <= 0 || retry < _maxRetries; retry++)
+            for (var retry = 0; retry < _maxRetries; retry++)
             {
                 var backoff = (int) Math.Min(Math.Pow(retry, 2), MaxBackoff);
                 if (retry > 0) await Task.Delay(backoff * 1000);

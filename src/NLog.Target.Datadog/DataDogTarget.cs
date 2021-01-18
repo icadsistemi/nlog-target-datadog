@@ -41,6 +41,9 @@ namespace NLog.Target.Datadog
         private IDatadogClient _client;
         private JsonSerializer _jsonSerializer;
 
+        private const int DefaultMaxRetries = 10;
+        private int _maxRetries = DefaultMaxRetries;
+
         public DataDogTarget()
         {
             Name = "DataDog";
@@ -56,7 +59,11 @@ namespace NLog.Target.Datadog
         public string Host { get; set; }
         public string[] Tags { get; set; }
 
-        public int MaxRetries { get; set; } = 0;
+        public int MaxRetries
+        {
+            get => _maxRetries <= 0 ? DefaultMaxRetries : _maxRetries;
+            set => _maxRetries = value;
+        }
 
         /// <summary>
         ///     URL of the server to send log events to.

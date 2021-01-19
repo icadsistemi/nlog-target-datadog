@@ -45,7 +45,7 @@ namespace NLog.Targets.Datadog.Tests
             LogManager.Configuration = new XmlLoggingConfiguration("NLog.Targets.Datadog.Tests.dll.config");
             var logger = LogManager.GetLogger("Example");
 
-            const int logs = 10000;
+            const int logs = 10_000;
 
             Task.Run(() =>
             {
@@ -106,7 +106,7 @@ namespace NLog.Targets.Datadog.Tests
 
             using (new AssertionScope("read configuration properties"))
             {
-                dataDog.MaxRetries.Should().Be(5);
+                dataDog.MaxRetries.Should().Be(4);
                 dataDog.MaxBackoff.Should().Be(2);
             }
         }

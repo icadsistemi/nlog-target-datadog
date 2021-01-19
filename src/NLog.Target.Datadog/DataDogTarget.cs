@@ -72,8 +72,8 @@ namespace NLog.Target.Datadog
         /// <summary>Max waiting time used to retry to send a single failed batch again.</summary>
         public int MaxBackoff
         {
-            get => _maxBackoff <= 0 ? DefaultMaxBackoff : _maxRetries;
-            set => _maxRetries = value;
+            get => _maxBackoff <= 0 ? DefaultMaxBackoff : _maxBackoff;
+            set => _maxBackoff = value;
         }
 
         /// <summary>

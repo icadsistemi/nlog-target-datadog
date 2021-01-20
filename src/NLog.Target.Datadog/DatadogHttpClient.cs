@@ -99,7 +99,7 @@ namespace NLog.Target.Datadog
             try
             {
                 InternalLogger.Trace("Sending payload to Datadog: {0}", payload);
-                var result = await _client.PostAsync(_url, content);
+                var result = await _client.PostAsync(_url, content).ConfigureAwait(false);
                 InternalLogger.Trace("Statuscode: {0}", result.StatusCode);
                 if (result.IsSuccessStatusCode) 
                     return;

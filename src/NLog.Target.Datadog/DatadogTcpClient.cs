@@ -78,12 +78,12 @@ namespace NLog.Target.Datadog
         private async Task ConnectAsync()
         {
             _client = new TcpClient();
-            await _client.ConnectAsync(_url, _port);
+            await _client.ConnectAsync(_url, _port).ConfigureAwait(false);
             Stream rawStream = _client.GetStream();
             if (_useSsl)
             {
                 var secureStream = new SslStream(rawStream);
-                await secureStream.AuthenticateAsClientAsync(_url);
+                await secureStream.AuthenticateAsClientAsync(_url).ConfigureAwait(false);
                 _stream = secureStream;
             }
             else
@@ -108,7 +108,7 @@ namespace NLog.Target.Datadog
             {
                 try
                 {
-                    await ConnectAsync();
+                    await ConnectAsync().ConfigureAwait(false);
                     connected = true;
                 }
                 catch (Exception e)
@@ -123,7 +123,7 @@ namespace NLog.Target.Datadog
                 {
                     InternalLogger.Trace("Sending payload to Datadog: {0}", payload);
                     var data = UTF8.GetBytes(payload);
-                    await _stream.WriteAsync(data, 0, data.Length);
+                    await _stream.WriteAsync(data, 0, data.Length).ConfigureAwait(false);
                     return;
                 }
                 catch (Exception e)

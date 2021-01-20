@@ -13,7 +13,7 @@ using NLog.Common;
 
 namespace NLog.Target.Datadog
 {
-    public class DatadogHttpClient : DataDogClient
+    public class DatadogHttpClient : IDatadogClient, IDisposable
     {
         private const string _content = "application/json";
         private const int _maxSize = 2 * 1024 * 1024 - 51; // Need to reserve space for at most 49 "," and "[" + "]"
@@ -28,16 +28,15 @@ namespace NLog.Target.Datadog
 
         private readonly string _url;
 
-        public DatadogHttpClient(string url, string apiKey, int maxRetries, int maxBackoff) 
-            : base(maxRetries, maxBackoff)
+        public DatadogHttpClient(string url, string apiKey) 
         {
             _client = new HttpClient();
             _url = $"{url}/v1/input/{apiKey}";
             InternalLogger.Info("Creating HTTP client with config: {0}", _url);
         }
 
-        public override Task WriteAsync(IReadOnlyCollection<string> events) => Task.WhenAll(DoWrite(events));
-        public override void Write(IReadOnlyCollection<string> events) => Task.WhenAll(DoWrite(events)).GetAwaiter().GetResult();
+        public Task WriteAsync(IReadOnlyCollection<string> events) => Task.WhenAll(DoWrite(events));
+        public void Write(IReadOnlyCollection<string> events) => Task.WhenAll(DoWrite(events)).GetAwaiter().GetResult();
 
         private IEnumerable<Task> DoWrite(IReadOnlyCollection<string> events)
         {
@@ -46,7 +45,7 @@ namespace NLog.Target.Datadog
             return tasks;
         }
 
-        public override void Close() => _client?.Dispose();
+        public void Close() => _client?.Dispose();
 
         private static IList<string> SerializeEvents(IReadOnlyCollection<string> events)
         {
@@ -97,30 +96,21 @@ namespace NLog.Target.Datadog
         private async Task Post(string payload)
         {
             var content = new StringContent(payload, Encoding.UTF8, _content);
-            for (var retry = 0; retry < MaxRetries; retry++)
+            try
             {
-                var backoff = (int) Math.Min(Math.Pow(2, retry), MaxBackoff);
-                if (retry > 0) await Task.Delay(backoff * 1000);
-
-                try
-                {
-                    InternalLogger.Trace("Sending payload to Datadog: {0}", payload);
-                    var result = await _client.PostAsync(_url, content);
-                    InternalLogger.Trace("Statuscode: {0}", result.StatusCode);
-                    if (result == null) continue;
-                    if ((int) result.StatusCode >= 500) continue;
-                    if ((int) result.StatusCode >= 400) break;
-                    if (result.IsSuccessStatusCode) return;
-                }
-                catch (Exception e)
-                {
-                    InternalLogger.Warn(e.ToString());
-                }
+                InternalLogger.Trace("Sending payload to Datadog: {0}", payload);
+                var result = await _client.PostAsync(_url, content);
+                InternalLogger.Trace("Statuscode: {0}", result.StatusCode);
+                if (result.IsSuccessStatusCode) 
+                    return;
             }
-
-            throw new CannotSendLogEventException(MaxRetries);
+            catch (Exception e)
+            {
+                InternalLogger.Warn(e.ToString());
+            }
+            throw new CannotSendLogEventException();
         }
 
-        public override void Dispose() => Close();
+        public void Dispose() => Close();
     }
 }

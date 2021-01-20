@@ -62,19 +62,6 @@ namespace NLog.Target.Datadog
         public string Host { get; set; }
         public string[] Tags { get; set; }
 
-        /// <summary>Max retries used to send a single batch.</summary>
-        public int MaxRetries
-        {
-            get => _maxRetries <= 0 ? DefaultMaxRetries : _maxRetries;
-            set => _maxRetries = value;
-        }
-
-        /// <summary>Max waiting time used to retry to send a single failed batch again.</summary>
-        public int MaxBackoff
-        {
-            get => _maxBackoff <= 0 ? DefaultMaxBackoff : _maxBackoff;
-            set => _maxBackoff = value;
-        }
 
         /// <summary>
         ///     URL of the server to send log events to.
@@ -124,9 +111,9 @@ namespace NLog.Target.Datadog
                 useTCP = false;
 
             if (useTCP)
-                _client = new DatadogTcpClient(Url, Port, UseSSL, ApiKey, MaxRetries, MaxBackoff);
+                _client = new DatadogTcpClient(Url, Port, UseSSL, ApiKey);
             else
-                _client = new DatadogHttpClient(Url, ApiKey, MaxRetries, MaxBackoff);
+                _client = new DatadogHttpClient(Url, ApiKey);
         }
 
         protected override void Write(LogEventInfo logEvent)

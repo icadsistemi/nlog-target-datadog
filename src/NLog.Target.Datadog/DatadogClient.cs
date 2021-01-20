@@ -22,25 +22,4 @@ namespace NLog.Target.Datadog
         /// </summary>
         void Close();
     }
-
-    public abstract class DataDogClient : IDatadogClient, IDisposable
-    {
-        protected DataDogClient(int maxRetries, int maxBackoff)
-        {
-            MaxRetries = maxRetries;
-            MaxBackoff = maxBackoff;
-        }
-
-
-        /// <summary>Maximum retries before giving in posting batch.</summary>
-        protected int MaxRetries { get; set; }
-
-        /// <summary>Maximum waiting time before posting same failed batch again.</summary>
-        protected int MaxBackoff { get; set; }
-
-        public abstract void Dispose();
-        public abstract void Write(IReadOnlyCollection<string> events);
-        public abstract Task WriteAsync(IReadOnlyCollection<string> events);
-        public abstract void Close();
-    }
 }

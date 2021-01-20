@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Linq;
+using System.Net;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
@@ -53,11 +54,15 @@ namespace NLog.Targets.Datadog.Tests
                 var size1 = Process.GetCurrentProcess().PrivateMemorySize64;
                 _testOutputHelper.WriteLine("Memory before test: {0}", size1);
 
-                for (int i = 0; i < logs; ++i)
+                var i = 0;
+                for (; i < logs; ++i)
                 {
                     logger.Info($"{Greeting}: {i}");
                     Thread.Sleep(10);
                 }
+
+                logger.Info($"{Greeting}: {i}");
+                //LogManager.Flush();
 
                 while (true)
                 {
@@ -106,8 +111,9 @@ namespace NLog.Targets.Datadog.Tests
 
             using (new AssertionScope("read configuration properties"))
             {
-                dataDog.MaxRetries.Should().Be(4);
-                dataDog.MaxBackoff.Should().Be(2);
+                dataDog.ApiKey.Should().NotBeNullOrEmpty();
+                dataDog.Name.Should().Be("dataDog");
+                dataDog.IncludeAllProperties.Should().Be(true);
             }
         }
 

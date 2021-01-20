@@ -1,6 +1,7 @@
 # NLog.Target.DataDog
 
-A NLog target that send events and logs staight away to Datadog. By default the sink sends logs over HTTPS
+A NLog target that send events and logs staight away to Datadog. By default the sink sends logs over HTTPS.
+It does so in batches which is more optimal way as compared to the `WebService` target.
 
 **Package** - [NLog.Target.DataDog](https://www.nuget.org/packages/NLog.Target.Datadog/)
 | **Platforms** - .NET 4.5, .NET 4.6.1, .NET 4.7.2, netstandard1.3, netstandard2.0

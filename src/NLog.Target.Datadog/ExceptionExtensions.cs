@@ -10,9 +10,9 @@ namespace NLog.Target.Datadog
                 return exception;
 
             var flattenException = aggregateException.Flatten();
-            if (flattenException.InnerExceptions.Count == 1) return flattenException.InnerExceptions[0];
-
-            return flattenException;
+            return flattenException.InnerExceptions.Count == 1 ? 
+                flattenException.InnerExceptions[0] : 
+                flattenException;
         }
     }
 }

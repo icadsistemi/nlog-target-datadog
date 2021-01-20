@@ -96,17 +96,20 @@ namespace NLog.Target.Datadog
         private async Task Post(string payload)
         {
             var content = new StringContent(payload, Encoding.UTF8, _content);
+            int? status = null;
             try
             {
                 InternalLogger.Trace("Sending payload to Datadog: {0}", payload);
                 var result = await _client.PostAsync(_url, content).ConfigureAwait(false);
-                InternalLogger.Trace("Statuscode: {0}", result.StatusCode);
-                if (result.IsSuccessStatusCode) 
+                status = result == null ? null : (int?) result.StatusCode;
+                InternalLogger.Trace("Statuscode: {0}", status);
+                if (result?.IsSuccessStatusCode == true) 
                     return;
             }
             catch (Exception e)
             {
-                InternalLogger.Warn(e.ToString());
+                InternalLogger.Error(status == null ? "Error sending payload (protocol=HTTP):\n{1}" :
+                    "Error sending payload (protocol=HTTP, status={0}):\n{1}", status, e);
             }
             throw new CannotSendLogEventException();
         }

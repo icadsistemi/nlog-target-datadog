@@ -1,10 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0;netstandard1.3;net45</TargetFrameworks>
+    <TargetFrameworks>netstandard2.0</TargetFrameworks>
     <AssemblyName>NLog.Target.Datadog</AssemblyName>
     <PackageId>NLog.Target.Datadog</PackageId>
-    <PackageVersion>1.0.11</PackageVersion>
+    <PackageVersion>2.0.0</PackageVersion>
     <Authors>Dmitry Novik</Authors>
     <Title>NLog Target Datadog</Title>
     <Description>NLog Target that sends log events to Datadog https://www.datadoghq.com/</Description>
@@ -13,20 +13,20 @@
     <PackageProjectUrl>https://github.com/dmitrynovik/nlog-target-datadog</PackageProjectUrl>
     <PackageLicenseUrl>https://github.com/dmitrynovik/nlog-target-datadog/blob/master/LICENSE</PackageLicenseUrl>
     <PackageIconUrl>https://nlog-project.org/images/NLog-logo-only-inverse.png</PackageIconUrl>
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
     <Company />
-    <RepositoryUrl>https://github.com/dmitrynovik/nlog-target-datadog</RepositoryUrl>
+    <RepositoryUrl>https://github.com/icadsistemi/nlog-target-datadog</RepositoryUrl>
     <RepositoryType>Git</RepositoryType>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
-    <PackageReference Include="NLog" Version="4.6.6" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageReference Include="NLog" Version="4.7.15" />
     <PackageReference Include="System.Net.Http" Version="4.3.4" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
-    <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="2.1.1" />
+    <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="9.0.2" />
     <PackageReference Include="System.Net.Security" Version="4.3.2" />
     <PackageReference Include="System.Net.Sockets" Version="4.3.0" />
     <PackageReference Include="System.Threading" Version="4.3.0" />

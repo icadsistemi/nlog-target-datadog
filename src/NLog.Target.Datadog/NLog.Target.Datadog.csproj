@@ -4,7 +4,7 @@
     <TargetFrameworks>netstandard2.0</TargetFrameworks>
     <AssemblyName>NLog.Target.Datadog</AssemblyName>
     <PackageId>NLog.Target.Datadog</PackageId>
-    <PackageVersion>2.1.1</PackageVersion>
+    <PackageVersion>2.1.3</PackageVersion>
     <Authors>Dmitry Novik; Simone Serra</Authors>
     <Title>NLog Target Datadog</Title>
     <Description>NLog Target that sends log events to Datadog https://www.datadoghq.com/</Description>
@@ -13,28 +13,17 @@
     <PackageProjectUrl>https://github.com/dmitrynovik/nlog-target-datadog</PackageProjectUrl>
     <PackageLicenseUrl>https://github.com/dmitrynovik/nlog-target-datadog/blob/master/LICENSE</PackageLicenseUrl>
     <PackageIconUrl>https://nlog-project.org/images/NLog-logo-only-inverse.png</PackageIconUrl>
-    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <GeneratePackageOnBuild>False</GeneratePackageOnBuild>
     <Company />
     <RepositoryUrl>https://github.com/icadsistemi/nlog-target-datadog</RepositoryUrl>
     <RepositoryType>Git</RepositoryType>
+    <AssemblyVersion>$(PackageVersion)</AssemblyVersion>
+    <FileVersion>$(PackageVersion)</FileVersion>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="NLog" Version="5.4.0" />
-  </ItemGroup>
-
-  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
     <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="8.0.0" />
-  </ItemGroup>
-
-  <ItemGroup Condition="'$(TargetFramework)' != 'netstandard2.0'">
-    <Compile Include="Configuration\Extensions\System.Configuration\**\*.cs" />
-  </ItemGroup>
-
-  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard1.3'">
-    <PackageReference Include="System.Net.Security" Version="4.3.2" />
-    <PackageReference Include="System.Net.Sockets" Version="4.3.0" />
-    <PackageReference Include="System.Threading.Thread" Version="4.3.0" />
   </ItemGroup>
 </Project>
